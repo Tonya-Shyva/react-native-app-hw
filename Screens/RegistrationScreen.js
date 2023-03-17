@@ -43,9 +43,18 @@ export const Registration = ({ navigation }) => {
     setPassword("");
   };
 
-  const loginChange = (value) => setLogin(value);
-  const emailChange = (value) => setEmail(value);
-  const passwordChange = (value) => setPassword(value);
+  const loginChange = (value) => {
+    setLogin(value);
+    setIsShowKeyBoard(true);
+  };
+  const emailChange = (value) => {
+    setEmail(value);
+    setIsShowKeyBoard(true);
+  };
+  const passwordChange = (value) => {
+    setPassword(value);
+    setIsShowKeyBoard(true);
+  };
 
   const togglePassInput = () => {
     if (securePassword === true) {
@@ -70,70 +79,68 @@ export const Registration = ({ navigation }) => {
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <ScrollView>
-            <View
-              style={{
-                ...styles.container,
-                marginTop: isShowKeyBoard ? 103 : 219,
-              }}
-            >
-              <View style={styles.avatarWrapper}>
-                {/* <Image style={styles.avatar} source={{ uri: ava }} /> */}
-                <Pressable onPress="">
-                  <AntDesign
-                    name="pluscircleo"
-                    size={30}
-                    color="#FF6C00"
-                    style={styles.icon}
-                  />
-                  {/* <AntDesign name="closecircleo" size={24} color="black" /> */}
-                </Pressable>
-              </View>
-
-              <Text style={styles.title}>Реєстрація</Text>
-
-              <TextInput
-                style={styles.input}
-                value={login}
-                placeholder="Логін"
-                onChangeText={loginChange}
-              />
-              <TextInput
-                style={styles.input}
-                value={email}
-                placeholder="Адреса електронної пошти"
-                onChangeText={emailChange}
-              />
-              <TextInput
-                style={styles.input}
-                value={password}
-                placeholder="Пароль"
-                secureTextEntry={securePassword}
-                onChangeText={passwordChange}
-              />
-              <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
-                {toggleIcon}
+          <ScrollView
+            style={{
+              ...styles.container,
+              marginTop: isShowKeyBoard ? 103 : 219,
+            }}
+          >
+            {/* <View> */}
+            <View style={styles.avatarWrapper}>
+              {/* <Image style={styles.avatar} source={{ uri: ava }} /> */}
+              <Pressable onPress="">
+                <AntDesign
+                  name="pluscircleo"
+                  size={30}
+                  color="#FF6C00"
+                  style={styles.icon}
+                />
+                {/* <AntDesign name="closecircleo" size={24} color="black" /> */}
               </Pressable>
-              <TouchableOpacity
-                onPress={onSubmit}
-                style={styles.button}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.text}>Зареєструватись</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.subscribeWrapper}
-                activeOpacity={0.8}
-                onPress={onTransition}
-              >
-                <Text style={{ color: "#1B4371" }}>
-                  Вже є аккаунт? <Text>Увійти</Text>
-                </Text>
-              </TouchableOpacity>
             </View>
+
+            <Text style={styles.title}>Реєстрація</Text>
+
+            <TextInput
+              style={styles.input}
+              value={login}
+              placeholder="Логін"
+              onChangeText={loginChange}
+            />
+            <TextInput
+              style={styles.input}
+              value={email}
+              placeholder="Адреса електронної пошти"
+              onChangeText={emailChange}
+            />
+            <TextInput
+              style={styles.input}
+              value={password}
+              placeholder="Пароль"
+              secureTextEntry={securePassword}
+              onChangeText={passwordChange}
+            />
+            <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
+              {toggleIcon}
+            </Pressable>
+            <TouchableOpacity
+              onPress={onSubmit}
+              style={styles.button}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.text}>Зареєструватись</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.subscribeWrapper}
+              activeOpacity={0.8}
+              onPress={onTransition}
+            >
+              <Text style={{ color: "#1B4371" }}>
+                Вже є аккаунт? <Text>Увійти</Text>
+              </Text>
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
-        {/* </ScrollView> */}
       </TouchableWithoutFeedback>
     </ImageBackground>
   );
@@ -146,8 +153,9 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
+    position: "relative",
     // justifyContent: "center",
-    alignItems: "stretch",
+    // alignItems: "stretch",
     fontFamily: "Roboto400",
     fontSize: 16,
     lineHeight: 19,
@@ -159,7 +167,7 @@ const styles = StyleSheet.create({
   },
   avatarWrapper: {
     position: "absolute",
-    zIndex: 100,
+    zIndex: 99,
     top: -50,
     width: 120,
     height: 120,

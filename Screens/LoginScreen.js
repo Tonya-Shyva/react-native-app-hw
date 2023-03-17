@@ -107,7 +107,7 @@ export const Login = ({ navigation }) => {
               >
                 <Text style={{ color: "#1B4371" }}>
                   Ще нема аккаунта?
-                  <Text> Зареєструватись</Text>
+                  <Text> Зареєструватися</Text>
                 </Text>
               </TouchableOpacity>
             </View>

@@ -7,9 +7,14 @@ import { NavigationContainer } from "@react-navigation/native";
 SplashScreen.preventAutoHideAsync();
 
 import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Registration } from "./Screens/RegistrationScreen";
 import { Login } from "./Screens/LoginScreen";
+import { PostsScreen } from "./Screens/PostsScreen";
+import { CreatePostScreen } from "./Screens/CreatePostsScreen";
+import { ProfileScreen } from "./Screens/ProfileScreen";
 const Stack = createStackNavigator();
+const BottomTab = createBottomTabNavigator();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -45,18 +50,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <View style={styles.appContainer} onLayout={onLayoutRootView}>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="Реєстрація"
-            component={Registration}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Логін"
-            component={Login}
-            options={{ headerShown: false }}
-          />
-        </Stack.Navigator>
+        <BottomTab.Navigator>
+          <BottomTab.Screen name="Пости" component={PostsScreen} />
+          <BottomTab.Screen name="Створити пост" component={CreatePostScreen} />
+          <BottomTab.Screen name="Профіль" component={ProfileScreen} />
+        </BottomTab.Navigator>
       </View>
     </NavigationContainer>
   );
@@ -68,3 +66,16 @@ const styles = StyleSheet.create({
     // alignItems: "stretch",
   },
 });
+
+// <Stack.Navigator>
+//   <Stack.Screen
+//     name="Реєстрація"
+//     component={Registration}
+//     options={{ headerShown: false }}
+//   />
+//   <Stack.Screen
+//     name="Логін"
+//     component={Login}
+//     options={{ headerShown: false }}
+//   />
+// </Stack.Navigator>;
