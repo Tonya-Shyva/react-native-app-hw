@@ -69,8 +69,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     position: "relative",
-    marginLeft: 16,
-    marginRight: 16,
   },
   post: {
     backgroundColor: "#ccc",

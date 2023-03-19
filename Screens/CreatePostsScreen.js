@@ -15,7 +15,7 @@ import {
   ScrollView,
 } from "react-native";
 
-export const CreatePostScreen = () => {
+export const CreatePostsScreen = ({ navigation }) => {
   return (
     <View>
       <Text>CreatePostScreen</Text>

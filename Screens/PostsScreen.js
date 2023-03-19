@@ -9,7 +9,7 @@ import {
   VirtualizedList,
 } from "react-native";
 
-export const PostsScreen = () => {
+export const PostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [avatar, setAvatar] = useState(null);
   //   const name = useSelector(selectName);

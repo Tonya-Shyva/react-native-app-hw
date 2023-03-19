@@ -3,20 +3,12 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { useRoute } from "./router";
 
 SplashScreen.preventAutoHideAsync();
 
-import { createStackNavigator } from "@react-navigation/stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Registration } from "./Screens/RegistrationScreen";
-import { Login } from "./Screens/LoginScreen";
-import { PostsScreen } from "./Screens/PostsScreen";
-import { CreatePostScreen } from "./Screens/CreatePostsScreen";
-import { ProfileScreen } from "./Screens/ProfileScreen";
-const Stack = createStackNavigator();
-const BottomTab = createBottomTabNavigator();
-
 export default function App() {
+  const routing = useRoute(true);
   const [fontsLoaded] = useFonts({
     Roboto400: require("./assets/fonts/Roboto/Roboto-Regular.ttf"),
     Roboto500: require("./assets/fonts/Roboto/Roboto-Medium.ttf"),
@@ -50,11 +42,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <View style={styles.appContainer} onLayout={onLayoutRootView}>
-        <BottomTab.Navigator>
-          <BottomTab.Screen name="Пости" component={PostsScreen} />
-          <BottomTab.Screen name="Створити пост" component={CreatePostScreen} />
-          <BottomTab.Screen name="Профіль" component={ProfileScreen} />
-        </BottomTab.Navigator>
+        {routing}
       </View>
     </NavigationContainer>
   );
@@ -66,16 +54,3 @@ const styles = StyleSheet.create({
     // alignItems: "stretch",
   },
 });
-
-// <Stack.Navigator>
-//   <Stack.Screen
-//     name="Реєстрація"
-//     component={Registration}
-//     options={{ headerShown: false }}
-//   />
-//   <Stack.Screen
-//     name="Логін"
-//     component={Login}
-//     options={{ headerShown: false }}
-//   />
-// </Stack.Navigator>;
