@@ -1,17 +1,21 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StyleSheet, Pressable, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Pressable, View } from "react-native";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+
 import { ProfileScreen } from "./ProfileScreen";
 import { PostsScreen } from "./PostsScreen";
 import { CreatePostsScreen } from "./CreatePostsScreen";
+import { logOut } from "../redux/auth/authOperations";
+
 const BottomTab = createBottomTabNavigator();
 
-export const Home = () => {
-  //   const dispatch = useDispatch();
+export const MainScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
 
-  //   const logOutHandler = () => {
-  //     dispatch(logOut());
-  //   };
+  const logOutHandler = () => {
+    dispatch(logOut());
+  };
 
   return (
     <BottomTab.Navigator
@@ -48,9 +52,10 @@ export const Home = () => {
         name="Публікації"
         component={PostsScreen}
         options={{
+          headerTitleAlign: "center",
           headerRight: () => (
-            <Pressable onPress="">
-              <MaterialCommunityIcons name="logout" size={24} color="black" />
+            <Pressable onPress={logOutHandler}>
+              <MaterialCommunityIcons name="logout" size={24} color="#BDBDBD" />
             </Pressable>
           ),
         }}
@@ -58,8 +63,26 @@ export const Home = () => {
       <BottomTab.Screen
         name="Створити публикацію"
         component={CreatePostsScreen}
+        options={{
+          headerTitleAlign: "center",
+          headerLeft: () => (
+            <Pressable onPress={() => navigation.navigate("Публікації")}>
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={24}
+                color="#BDBDBD"
+              />
+            </Pressable>
+          ),
+        }}
       />
-      <BottomTab.Screen name="Профіль" component={ProfileScreen} />
+      <BottomTab.Screen
+        name="Профіль"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
     </BottomTab.Navigator>
   );
 };

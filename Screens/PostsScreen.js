@@ -9,7 +9,9 @@ import {
   VirtualizedList,
 } from "react-native";
 
-export const PostsScreen = ({ navigation }) => {
+import { PostItem } from "../components/PostItem";
+
+export const PostsScreen = ({ route }) => {
   const [posts, setPosts] = useState([]);
   const [avatar, setAvatar] = useState(null);
   //   const name = useSelector(selectName);
@@ -49,9 +51,23 @@ export const PostsScreen = ({ navigation }) => {
     location: posts[index].location,
   });
 
+  useEffect(() => {
+    if (route.params) {
+      setPosts((prevState) => [...prevState, route.params]);
+    }
+  }, [route.params]);
+
   return (
     <View style={styles.container}>
-      <Text>PostsScreen</Text>
+      <FlatList
+        data={posts}
+        keyExtractor={(item, indx) => indx.toString()}
+        renderItem={({ item }) => (
+          <View>
+            <Image source={{ uri: item.photoUri }} />
+          </View>
+        )}
+      />
       {/* {isAuth && (
         <>
           <View style={styles.avatar}>

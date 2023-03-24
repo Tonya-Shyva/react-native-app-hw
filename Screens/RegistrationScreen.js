@@ -15,10 +15,15 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { register, setAvatar } from "../redux/auth/authOperations";
+import { uploadPhotoToStorage } from "../redux/auth/authOperations";
 import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
 export const Registration = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   const [isShowKeyBoard, setIsShowKeyBoard] = useState(false);
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
@@ -27,17 +32,19 @@ export const Registration = ({ navigation }) => {
   const [toggleIcon, setToggleIcon] = useState(
     <Entypo name="eye-with-line" size={24} color="black" />
   );
+  const [avatar, setAvatar] = useState(null);
 
   const keyboardHide = () => {
     () => setIsShowKeyBoard(false);
     Keyboard.dismiss();
   };
 
-  const onSubmit = () => {
+  const handleSubmit = () => {
     keyboardHide();
     if (login === "" || email === "" || password === "") {
       return Alert.alert("Заповніть всі обов'язкові поля");
     }
+    dispatch(register({ email, password, login, avatar }));
     setLogin("");
     setEmail("");
     setPassword("");
@@ -45,15 +52,12 @@ export const Registration = ({ navigation }) => {
 
   const loginChange = (value) => {
     setLogin(value);
-    setIsShowKeyBoard(true);
   };
   const emailChange = (value) => {
     setEmail(value);
-    setIsShowKeyBoard(true);
   };
   const passwordChange = (value) => {
     setPassword(value);
-    setIsShowKeyBoard(true);
   };
 
   const togglePassInput = () => {
@@ -79,13 +83,16 @@ export const Registration = ({ navigation }) => {
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <ScrollView
+          <View
             style={{
-              ...styles.container,
-              marginTop: isShowKeyBoard ? 103 : 219,
+              ...styles.containerReg,
+              margingBottom: isShowKeyBoard && 103,
             }}
+            // style={{
+            //   ...styles.containerReg,
+            //   marginTop: isShowKeyBoard ? 103 : 219,
+            // }}
           >
-            {/* <View> */}
             <View style={styles.avatarWrapper}>
               {/* <Image style={styles.avatar} source={{ uri: ava }} /> */}
               <Pressable onPress="">
@@ -100,46 +107,50 @@ export const Registration = ({ navigation }) => {
             </View>
 
             <Text style={styles.title}>Реєстрація</Text>
-
-            <TextInput
-              style={styles.input}
-              value={login}
-              placeholder="Логін"
-              onChangeText={loginChange}
-            />
-            <TextInput
-              style={styles.input}
-              value={email}
-              placeholder="Адреса електронної пошти"
-              onChangeText={emailChange}
-            />
-            <TextInput
-              style={styles.input}
-              value={password}
-              placeholder="Пароль"
-              secureTextEntry={securePassword}
-              onChangeText={passwordChange}
-            />
-            <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
-              {toggleIcon}
-            </Pressable>
-            <TouchableOpacity
-              onPress={onSubmit}
-              style={styles.button}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.text}>Зареєструватись</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.subscribeWrapper}
-              activeOpacity={0.8}
-              onPress={onTransition}
-            >
-              <Text style={{ color: "#1B4371" }}>
-                Вже є аккаунт? <Text>Увійти</Text>
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+            <ScrollView>
+              <TextInput
+                style={styles.input}
+                value={login}
+                placeholder="Логін"
+                onChangeText={loginChange}
+                onFocus={() => setIsShowKeyBoard(true)}
+              />
+              <TextInput
+                style={styles.input}
+                value={email}
+                placeholder="Адреса електронної пошти"
+                onChangeText={emailChange}
+                onFocus={() => setIsShowKeyBoard(true)}
+              />
+              <TextInput
+                style={styles.input}
+                value={password}
+                placeholder="Пароль"
+                secureTextEntry={securePassword}
+                onChangeText={passwordChange}
+                onFocus={() => setIsShowKeyBoard(true)}
+              />
+              <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
+                {toggleIcon}
+              </Pressable>
+              <TouchableOpacity
+                onPress={handleSubmit}
+                style={styles.button}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.text}>Зареєструватись</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.subscribeWrapper}
+                activeOpacity={0.8}
+                onPress={onTransition}
+              >
+                <Text style={{ color: "#1B4371" }}>
+                  Вже є аккаунт? <Text>Увійти</Text>
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </ImageBackground>
@@ -152,7 +163,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "flex-end",
   },
-  container: {
+  containerReg: {
     position: "relative",
     // justifyContent: "center",
     // alignItems: "stretch",
@@ -199,7 +210,7 @@ const styles = StyleSheet.create({
   },
   passwordIcon: {
     position: "absolute",
-    top: 290,
+    top: 145,
     right: 30,
     cursor: "pointer",
     userSelect: "none",

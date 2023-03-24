@@ -1,11 +1,11 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import {
+  StyleSheet,
   FlatList,
   Image,
   ImageBackground,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -36,7 +36,7 @@ export const ProfileScreen = ({ navigation }) => {
           <MaterialCommunityIcons name="logout" size={26} color="#aaa" />
         </Pressable>
         <Text style={styles.name}>name</Text>
-        {/* <FlatList
+        <FlatList
           data={posts}
           renderItem={({ item }) => (
             <PostItem
@@ -50,7 +50,7 @@ export const ProfileScreen = ({ navigation }) => {
             />
           )}
           keyExtractor={(item) => item.id}
-        /> */}
+        />
       </View>
     </ImageBackground>
   );

@@ -15,9 +15,11 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { logIn } from "../redux/auth/authOperations";
 
 export const Login = ({ navigation }) => {
-  //   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [isShowKeyBoard, setIsShowKeyBoard] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,12 +33,12 @@ export const Login = ({ navigation }) => {
     Keyboard.dismiss();
   };
 
-  const onSubmit = () => {
+  const handleSubmit = () => {
     keyboardHide();
     if (email === "" || password === "") {
       return Alert.alert("Заповніть всі обов'язкові поля");
     }
-    setLogin("");
+    dispatch(logIn({ email, password }));
     setEmail("");
     setPassword("");
   };
@@ -60,58 +62,56 @@ export const Login = ({ navigation }) => {
 
   return (
     <ImageBackground
-      style={styles.image}
+      style={{ ...styles.image, paddingTop: isShowKeyBoard ? 45 : 111 }}
       source={require("../assets/images/bg-image.jpg")}
     >
       <TouchableWithoutFeedback onPress={keyboardHide}>
         <KeyboardAvoidingView
           behavior={Platform.OS == "ios" ? "padding" : "height"}
         >
-          <ScrollView>
-            <View
-              style={{
-                ...styles.container,
-                marginTop: isShowKeyBoard ? 229 : 279,
-                paddingBottom: isShowKeyBoard ? 45 : 111,
-              }}
+          {/* <ScrollView> */}
+          <View
+            style={
+              styles.container
+              // marginTop: isShowKeyBoard ? 229 : 279,
+            }
+          >
+            <Text style={styles.title}>Увійти</Text>
+            <TextInput
+              value={email}
+              onChangeText={emailChange}
+              placeholder="Адреса електронної пошти"
+              style={styles.input}
+            />
+            <TextInput
+              style={styles.input}
+              value={password}
+              placeholder="Пароль"
+              secureTextEntry={securePassword}
+              onChangeText={passwordChange}
+            />
+            <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
+              {toggleIcon}
+            </Pressable>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              activeOpacity={0.8}
             >
-              <Text style={styles.title}>Увійти</Text>
-              {/* <Text>User Id {userId}</Text> */}
-              <TextInput
-                value={email}
-                onChangeText={emailChange}
-                placeholder="Адреса електронної пошти"
-                style={styles.input}
-              />
-              <TextInput
-                style={styles.input}
-                value={password}
-                placeholder="Пароль"
-                secureTextEntry={securePassword}
-                onChangeText={passwordChange}
-              />
-              <Pressable style={styles.passwordIcon} onPress={togglePassInput}>
-                {toggleIcon}
-              </Pressable>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={onSubmit}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.text}>Увійти</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.subscribeWrapper}
-                activeOpacity={0.8}
-                onPress={onTransition}
-              >
-                <Text style={{ color: "#1B4371" }}>
-                  Ще нема аккаунта?
-                  <Text> Зареєструватися</Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+              <Text style={styles.text}>Увійти</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.subscribeWrapper}
+              activeOpacity={0.8}
+              onPress={onTransition}
+            >
+              <Text style={{ color: "#1B4371" }}>
+                Ще нема аккаунта?
+                <Text> Зареєструватися</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {/* </ScrollView> */}
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </ImageBackground>
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
     paddingHorizontal: 16,
-    // paddingBottom: 111,
+    paddingBottom: 111,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     backgroundColor: "#FFFFFF",

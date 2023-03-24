@@ -3,12 +3,14 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { useRoute } from "./router";
+import { Provider } from "react-redux";
+import { Routing } from "./router";
+import { store } from "./redux/store";
+import "./firebase/config";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const routing = useRoute(true);
   const [fontsLoaded] = useFonts({
     Roboto400: require("./assets/fonts/Roboto/Roboto-Regular.ttf"),
     Roboto500: require("./assets/fonts/Roboto/Roboto-Medium.ttf"),
@@ -40,11 +42,13 @@ export default function App() {
   // }, []);
 
   return (
-    <NavigationContainer>
-      <View style={styles.appContainer} onLayout={onLayoutRootView}>
-        {routing}
-      </View>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <View style={styles.appContainer} onLayout={onLayoutRootView}>
+          <Routing />
+        </View>
+      </NavigationContainer>
+    </Provider>
   );
 }
 
