@@ -21,6 +21,7 @@ export const MainScreen = ({ navigation }) => {
     <BottomTab.Navigator
       style={{ paddingTop: 9, height: 83 }}
       screenOptions={({ route }) => ({
+        headerTitleStyle: styles.headerTitleStyle,
         tabBarShowLabel: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName = "";
@@ -94,5 +95,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+  },
+  headerTitleStyle: {
+    fontSize: 19,
   },
 });

@@ -120,7 +120,7 @@ export const setAvatar = createAsyncThunk(
 export const uploadPhotoToStorage = async (uri) => {
   const response = await fetch(uri);
   const file = await response.blob();
-  const imageId = nanoid(12);
+  const imageId = nanoid();
   const storageRef = ref(storage, `avatar/${imageId}`);
   await uploadBytes(storageRef, file).then((snapShot) => {
     console.log("Uploaded a blob or file!");

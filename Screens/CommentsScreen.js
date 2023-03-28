@@ -31,14 +31,13 @@ export const CommentsScreen = ({ route }) => {
   const avatar = getAuth().currentUser.photoURL;
   const [text, setText] = useState("");
   const [comments, setComments] = useState(null);
-  const [commentsCounter, setCommentsCounter] = useState(0);
 
   date.locale(uk);
 
   const createPost = async () => {
     if (text === "") return;
     try {
-      const time = date.format(new Date(), "D MMMM YYYY | HH:mm");
+      const time = date.format(new Date(), "D MMMM, YYYY | HH:mm");
       console.log({ avatar, text, time, id });
       await addDoc(collection(db, "posts", id, "comments"), {
         avatar,
@@ -64,7 +63,7 @@ export const CommentsScreen = ({ route }) => {
         })
       );
       updateDoc(commentRef, { comment: post.length });
-      console.log(post.length);
+      // console.log(post.length);
       setComments(post);
     });
 

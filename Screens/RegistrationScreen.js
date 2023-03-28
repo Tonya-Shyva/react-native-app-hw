@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -15,11 +15,20 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-import { register, setAvatar } from "../redux/auth/authOperations";
-import { uploadPhotoToStorage } from "../redux/auth/authOperations";
+import { useDispatch } from "react-redux";
+import * as ImagePicker from "expo-image-picker";
 import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import {
+  register,
+  setAvatar,
+  uploadPhotoToStorage,
+} from "../redux/auth/authOperations";
+import firebase from "firebase/app";
+import "firebase/storage";
+import "firebase/database";
+
+const avaDefault = require("../assets/images/avatar.jpg");
 
 export const Registration = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -28,28 +37,33 @@ export const Registration = ({ navigation }) => {
   const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [avatar, setAvatar] = useState(null);
   const [securePassword, setSecurePassword] = useState(true);
   const [toggleIcon, setToggleIcon] = useState(
     <Entypo name="eye-with-line" size={24} color="black" />
   );
-  const [avatar, setAvatar] = useState(null);
 
   const keyboardHide = () => {
     () => setIsShowKeyBoard(false);
     Keyboard.dismiss();
   };
 
-  const handleSubmit = () => {
-    keyboardHide();
-    if (login === "" || email === "" || password === "") {
-      return Alert.alert("Заповніть всі обов'язкові поля");
+  const addAvatar = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uriAva = result.assets[0].uri;
+      setAvatar(uriAva);
+      dispatch(setAvatar(uriAva));
     }
-    dispatch(register({ email, password, login, avatar }));
-    setLogin("");
-    setEmail("");
-    setPassword("");
   };
 
+  useEffect(() => {}, [avatar]);
   const loginChange = (value) => {
     setLogin(value);
   };
@@ -58,6 +72,18 @@ export const Registration = ({ navigation }) => {
   };
   const passwordChange = (value) => {
     setPassword(value);
+  };
+
+  const handleSubmit = () => {
+    keyboardHide();
+    if (login === "" || email === "" || password === "") {
+      return Alert.alert("Заповніть всі обов'язкові поля");
+    }
+    dispatch(register({ email, password, login, avatar }));
+    // setLogin("");
+    // setEmail("");
+    // setPassword("");
+    // setAvatar(null)
   };
 
   const togglePassInput = () => {
@@ -94,16 +120,17 @@ export const Registration = ({ navigation }) => {
             // }}
           >
             <View style={styles.avatarWrapper}>
-              {/* <Image style={styles.avatar} source={{ uri: ava }} /> */}
-              <Pressable onPress="">
+              {avatar ? (
+                <Image style={styles.avatar} source={{ uri: avatar }} />
+              ) : null}
+              <TouchableOpacity onPress={addAvatar} activeOpacity={0.5}>
                 <AntDesign
                   name="pluscircleo"
                   size={30}
                   color="#FF6C00"
                   style={styles.icon}
                 />
-                {/* <AntDesign name="closecircleo" size={24} color="black" /> */}
-              </Pressable>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.title}>Реєстрація</Text>
@@ -185,6 +212,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F6",
     borderRadius: 15,
     alignSelf: "center",
+  },
+  avatar: {
+    width: 120,
+    height: 120,
   },
   icon: {
     top: 70,

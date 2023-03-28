@@ -2,18 +2,17 @@ import React from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 
 export const Comment = ({ avatar, text, time, postUid, commentUid }) => {
-  console.log(postUid, commentUid);
   return postUid === commentUid ? (
     <View style={styles.comment}>
-      <View style={styles.myWrap}>
+      <View style={styles.userWrap}>
         <Text style={styles.text}>{text}</Text>
         <Text style={styles.time}>{time} </Text>
       </View>
-      <Image style={styles.myAvatar} source={{ uri: avatar }} />
+      <Image style={styles.userAvatar} source={{ uri: avatar }} />
     </View>
   ) : (
     <View style={styles.comment}>
-      <Image style={styles.avatar} source={{ uri: avatar }} />
+      <Image style={styles.guestAvatar} source={{ uri: avatar }} />
       <View style={styles.wrap}>
         <Text style={styles.text}>{text}</Text>
         <Text style={styles.time}>{time} </Text>
@@ -24,7 +23,7 @@ export const Comment = ({ avatar, text, time, postUid, commentUid }) => {
 
 const styles = StyleSheet.create({
   comment: {
-    fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto500",
     fontSize: 13,
     flex: 1,
     flexDirection: "row",
@@ -32,13 +31,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  avatar: {
+  guestAvatar: {
     width: 28,
     height: 28,
     borderRadius: 14,
     marginRight: 16,
   },
-  myAvatar: {
+  userAvatar: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -47,16 +46,14 @@ const styles = StyleSheet.create({
   wrap: {
     width: 300,
     flexWrap: "wrap",
-    // backgroundColor: 'grey',
     backgroundColor: "rgba(0, 0, 0, 0.03)",
     borderRadius: 10,
     borderTopLeftRadius: 0,
     padding: 16,
   },
-  myWrap: {
+  userWrap: {
     width: 300,
     flexWrap: "wrap",
-    // backgroundColor: 'grey',
     backgroundColor: "rgba(0, 0, 0, 0.03)",
     borderRadius: 10,
     borderTopRightRadius: 0,
@@ -64,17 +61,20 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
+    fontFamily: "Roboto400",
+    fontSize: 13,
     lineHeight: 18,
     width: 250,
     marginLeft: 20,
   },
   time: {
+    fontSize: 10,
+    lineHeight: 18,
     width: 350,
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-end",
     marginTop: 8,
+    color: "#BDBDBD",
   },
 });

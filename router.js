@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { refreshUser } from "./redux/auth/sliceAuth";
+import { refreshUser } from "./redux/auth/authSlice";
 import { PostItem } from "./components/PostItem";
 import { MainScreen } from "./Screens/MainScreen";
 import { Login } from "./Screens/LoginScreen";
@@ -55,7 +55,7 @@ export const Routing = () => {
     );
   }
   return (
-    <Stack.Navigator initialRouteName="MainScreen" style={styles.navBox}>
+    <Stack.Navigator initialRouteName="MainScreen" style={styles.navWrap}>
       <Stack.Screen
         name="MainScreen"
         component={MainScreen}
@@ -69,9 +69,7 @@ export const Routing = () => {
 };
 
 const styles = StyleSheet.create({
-  navBox: {
+  navWrap: {
     padding: 16,
-
-    borderColor: "red",
   },
 });

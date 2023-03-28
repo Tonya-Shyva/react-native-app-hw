@@ -8,52 +8,44 @@ import {
   Pressable,
   TouchableOpacity,
   Platform,
-  Keyboard,
   SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as FileSystem from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import MapView, { Marker } from "react-native-maps";
 import { useSelector } from "react-redux";
 import { nanoid } from "nanoid";
 
+import { storage, db } from "../firebase/config";
 import { selectID, selectName } from "../redux/auth/selectors";
+import { uploadPhotoToStorage } from "../redux/auth/authOperations";
 
 export const CreatePostsScreen = ({ navigation }) => {
   const [camera, setCamera] = useState(null);
-  const [photoUri, setPhotoUri] = useState("");
+  const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
-  const [photoLocation, setPhotoLocation] = useState("");
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [city, setCity] = useState(null);
+  const [country, setCountry] = useState(null);
   const [photoSignature, setPhotoSignature] = useState("");
   const [hasPermission, setHasPermission] = useState(null);
-  // const [type, setType] = useState(Camera.Constants.Type.back);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [locationText, setLocationText] = useState(null);
+
   const uid = useSelector(selectID);
   const name = useSelector(selectName);
 
-  const takePhoto = async () => {
-    if (camera) {
-      const photo = await camera.takePictureAsync();
-      const location = await Location.getCurrentPositionAsync();
-      setPhotoUri(photo.uri);
-    }
-  };
-
-  const handleDeletePhoto = async () => {
-    if (photo) {
-      await FileSystem.deleteAsync(photoUri, { idempotent: true });
-      setPhotoUri(null);
-    }
-  };
-
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
+      let { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
       setHasPermission(status === "granted");
     })();
     (async () => {
@@ -68,56 +60,112 @@ export const CreatePostsScreen = ({ navigation }) => {
     })();
   }, []);
 
-  const photoTitleHandler = (text) => {
-    setPhotoSignature(text);
-  };
+  useEffect(() => {
+    if (location) {
+      (async () => {
+        let [address] = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
 
-  const photoLocationHandler = (text) => {
-    setPhotoLocation(text);
-  };
+        if (address) {
+          setCity(address.city);
+          setCountry(address.country);
+          // setLocation(address);
+        }
+      })();
+    }
+  }, [location]);
 
-  const uploadPhotoToStorage = async () => {
-    const response = await fetch(photoUri);
-    const file = await response.blob();
-
-    const photoId = nanoid();
-    const storageRef = ref(storage, `postImage/${photoId}`);
-
-    await uploadBytes(storageRef, file).then((snapshot) => {
-      console.log("Uploaded a blob or file!");
-    });
-    const storagePhotoUrl = await getDownloadURL(
-      ref(storage, `postImage/${photoId}`)
-    );
-    return storagePhotoUrl;
-  };
-
-  const uploadPostToStorage = async () => {
-    const photo = await uploadPhotoToStorage();
-
-    try {
-      const valueObj = {
-        name,
-        uid,
-        photoSignature,
-        photoLocation,
-        photo,
-        commentCounter: 0,
-      };
-      if (location) valueObj.location = location.coords;
-      const docRef = await addDoc(collection(db, "posts"), valueObj);
-      // console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
+  const takePhoto = async () => {
+    if (camera) {
+      const photo = await camera.takePictureAsync();
+      setPhoto(photo.uri);
     }
   };
 
-  const sendPhoto = async () => {
+  const deletePhoto = async () => {
+    if (photo) {
+      await FileSystem.deleteAsync(photo);
+      setPhoto("");
+    }
+  };
+
+  const photoSignatureHandler = (text) => {
+    setPhotoSignature(text);
+  };
+
+  // const photoLocationHandler = (text) => {
+  //   setLocationText(text);
+  // };
+
+  let text = "Loading location... ";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = `${city}, ${country}`;
+    // setLocationText(text);
+  }
+
+  const uploadPhotoToStorage = async () => {
+    const response = await fetch(photo);
+    const blobFile = await response.blob();
+
+    const imageId = nanoid();
+    const storageRef = ref(storage, `postImage/${imageId}`);
+
+    await uploadBytes(storageRef, blobFile).then((snapshot) => {
+      console.log("Uploaded a blob or file!");
+    });
+    const storageUrlPhoto = await getDownloadURL(
+      ref(storage, `postImage/${imageId}`)
+    );
+    return storageUrlPhoto;
+  };
+
+  const downloadPicture = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const pictureUri = result.assets[0].uri;
+      console.log(pictureUri);
+      setPhoto(pictureUri);
+      // dispatch(uploadPhotoToStorage(uri));
+    }
+  };
+
+  const uploadPostToStorage = async () => {
+    // const photo = await uploadPhotoToStorage();
+    try {
+      const dataToSave = {
+        name,
+        uid,
+        photoSignature,
+        // location,
+        photo,
+        commentCounter: 0,
+        locationText: text,
+      };
+      if (location) dataToSave.location = location.coords;
+      const docRef = await addDoc(collection(db, "posts"), dataToSave);
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const sendPost = async () => {
     await uploadPostToStorage();
+    // console.log("Не пост");
     setPhotoSignature("");
-    setPhotoLocation("");
-    setPhotoUri(null);
-    navigation.navigate("Публікації", { photoUri });
+    setLocationText("");
+    setPhoto(null);
+    navigation.navigate("Публікації");
   };
 
   return (
@@ -128,10 +176,10 @@ export const CreatePostsScreen = ({ navigation }) => {
         <View style={styles.container}>
           {useIsFocused() && (
             <Camera style={styles.camera} ref={(ref) => setCamera(ref)}>
-              {photoUri && (
+              {photo && (
                 <View style={styles.takePhotoWrap}>
                   <Image
-                    source={{ uri: photoUri }}
+                    source={{ uri: photo }}
                     style={{ width: 300, height: 200 }}
                   />
                 </View>
@@ -142,21 +190,28 @@ export const CreatePostsScreen = ({ navigation }) => {
             </Camera>
           )}
 
-          <Pressable onPress={uploadPhotoToStorage}>
-            <Text style={styles.text}>Завантажте фото</Text>
+          <Pressable onPress={downloadPicture}>
+            <Text
+              style={{
+                ...styles.downloadText,
+                color: photo ? "#BDBDBD" : "#000",
+              }}
+            >
+              Завантажте фото
+            </Text>
           </Pressable>
           <TextInput
             value={photoSignature}
-            onChangeText={photoTitleHandler}
+            onChangeText={photoSignatureHandler}
             placeholder="Назва..."
             style={styles.input}
           />
           <View position="relative">
             <Pressable
               style={styles.mapBtn}
-              onPress={() => {
-                navigation.navigate("Map");
-              }}
+              // onPress={() => {
+              //   navigation.navigate("Map", { location });
+              // }}
             >
               <MaterialCommunityIcons
                 name="map-marker-outline"
@@ -165,27 +220,29 @@ export const CreatePostsScreen = ({ navigation }) => {
               />
             </Pressable>
             <TextInput
-              value={photoLocation}
-              onChangeText={photoLocationHandler}
+              // value={locationText}
+              // onChangeText={photoLocationHandler}
               placeholder="Місцевість..."
               style={{ ...styles.input, paddingLeft: 30 }}
-            ></TextInput>
+            >
+              {text}
+            </TextInput>
           </View>
-          <Pressable onPress={sendPhoto} style={styles.button}>
+          <Pressable onPress={sendPost} style={styles.button}>
             <Text style={styles.buttonText}>Опублікувати</Text>
           </Pressable>
           <TouchableOpacity
             style={{
               flex: 0.1,
-              alignSelf: "flex-end",
+              alignSelf: "center",
               alignItems: "center",
             }}
-            onPress={handleDeletePhoto}
+            onPress={deletePhoto}
           >
             <MaterialCommunityIcons
               name="delete-variant"
-              size={24}
-              color="black"
+              size={50}
+              color={photo ? "black" : "#BDBDBD"}
             />
           </TouchableOpacity>
         </View>
@@ -201,31 +258,32 @@ const styles = StyleSheet.create({
   },
   camera: {
     justifyContent: "center",
-    alignItems: "center",
+    flexDirection: "row",
+    // alignItems: "start",
     height: 240,
     marginTop: 30,
     borderRadius: 8,
     backgroundColor: "#E5E5E5",
   },
   snapIconWrap: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     alignItems: "center",
+    alignSelf: "center",
     justifyContent: "center",
     borderRadius: 50,
-    alignSelf: "center",
+    // alignSelf: "center",
     backgroundColor: "#fff",
   },
   takePhotoWrap: {
     position: "absolute",
-    top: 10,
+    top: 15,
     left: 10,
     borderWidth: 3,
     borderColor: "red",
   },
-  text: {
+  downloadText: {
     marginTop: 10,
-    color: "#BDBDBD",
   },
   input: {
     height: 44,

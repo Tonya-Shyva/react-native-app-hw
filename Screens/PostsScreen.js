@@ -1,74 +1,66 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { StyleSheet, View, Image, Text, VirtualizedList } from "react-native";
+import { useSelector } from "react-redux";
+// import { getAuth } from "firebase/auth";
 import {
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  FlatList,
-  SafeAreaView,
-  VirtualizedList,
-} from "react-native";
+  collection,
+  query,
+  QuerySnapshot,
+  doc,
+  onSnapshot,
+  orderBy,
+} from "firebase/firestore";
 
+import { selectName, selectEmail, selectIsAuth } from "../redux/auth/selectors";
+import { auth, db } from "../firebase/config";
 import { PostItem } from "../components/PostItem";
 
-export const PostsScreen = ({ route }) => {
+export const PostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [avatar, setAvatar] = useState(null);
-  //   const name = useSelector(selectName);
-  //   const email = useSelector(selectEmail);
-  // const userId = useSelector(selectID);
-  //   const isAuth = useSelector((state) => state.auth.isAuth);
+  const name = useSelector(selectName);
+  const email = useSelector(selectEmail);
+  // const isAuth = useSelector(selectIsAuth);
+  const isAuth = useSelector((state) => state.auth.isAuth);
 
-  //   useEffect(() => {
-  //     if (!isAuth) return;
-  //     setAvatar(getAuth().currentUser.photoURL);
+  useEffect(() => {
+    if (!isAuth) return;
+    setAvatar(auth.currentUser.photoURL);
 
-  //     const q = query(collection(db, "posts"));
-  //     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-  //       const post = [];
-  //       querySnapshot.forEach((doc) =>
-  //         post.push({
-  //           ...doc.data(),
-  //           id: doc.id,
-  //         })
-  //       );
-  //       console.log(post, name);
-  //       setPosts(post);
-  //     });
-  //     return () => {
-  //       unsubscribe();
-  //     };
-  //   }, []);
+    const queryRequest = query(
+      collection(db, "posts")
+      // orderBy("date", "desc")
+    );
+    const unsubscribe = onSnapshot(queryRequest, (querySnapshot) => {
+      const allPosts = [];
+      querySnapshot.forEach((doc) =>
+        allPosts.push({
+          ...doc.data(),
+          id: doc.id,
+        })
+      );
+      setPosts(allPosts);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const getItemCount = () => posts.length;
 
   const getItem = (posts, index) => ({
-    title: posts[index].imageSignature,
     photo: posts[index].photo,
-    imageLocation: posts[index].imageLocation,
+    title: posts[index].photoSignature,
+    location: posts[index].location,
     uid: posts[index].uid,
     id: posts[index].id,
-    location: posts[index].location,
+    locationText: posts[index].text,
   });
-
-  useEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
-  }, [route.params]);
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item, indx) => indx.toString()}
-        renderItem={({ item }) => (
-          <View>
-            <Image source={{ uri: item.photoUri }} />
-          </View>
-        )}
-      />
-      {/* {isAuth && (
+      {isAuth && (
         <>
           <View style={styles.avatar}>
             <Image style={styles.image} source={{ uri: avatar }} />
@@ -83,11 +75,11 @@ export const PostsScreen = ({ route }) => {
             renderItem={({ item }) => (
               <PostItem
                 navigation={navigation}
-                title={item.title}
                 photo={item.photo}
-                imageLocation={item.imageLocation}
-                uid={item.uid}
+                title={item.title}
+                locationText={item.locationText}
                 id={item.id}
+                uid={item.uid}
                 location={item.location}
               />
             )}
@@ -96,7 +88,7 @@ export const PostsScreen = ({ route }) => {
             getItem={getItem}
           />
         </>
-      )} */}
+      )}
     </View>
   );
 };

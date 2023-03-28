@@ -16,7 +16,7 @@ export const PostItem = ({
   navigation,
   photo,
   title,
-  imageLocation,
+  locationText,
   id,
   uid,
   location,
@@ -25,27 +25,23 @@ export const PostItem = ({
   const [comment, setComment] = useState(0);
 
   const getLikeAndComment = async () => {
-    const likeRef = doc(db, "posts", id);
-    const docSnap = await getDoc(likeRef);
-    setComment(docSnap.data().comment);
-    setLike(docSnap.data().like);
+    const postRef = doc(db, "posts", id);
+    const docSnap = await getDoc(postRef);
+    setComment(await docSnap.data().comment);
+    setLike(await docSnap.data().like);
   };
 
   const incrementLike = async () => {
-    const likeRef = doc(db, "posts", id);
-    await updateDoc(likeRef, { like: increment(1) });
+    const postRef = doc(db, "posts", id);
+    await updateDoc(postRef, { like: increment(1) });
   };
 
-  const pressComment = () => {
-    navigation.navigate("CommentsScreen", { photo, id, uid });
+  const pressLike = async () => {
+    setLike(like + 1);
+    await incrementLike();
   };
 
-  const pressLike = () => {
-    setLike((prevState) => [...prevState, like + 1]);
-    incrementLike();
-  };
-
-  const pressMapMarker = () => {
+  const pressMap = () => {
     navigation.navigate("Map", { location });
   };
 
@@ -58,7 +54,7 @@ export const PostItem = ({
       <View style={styles.signatureBox}>
         <Pressable
           onPress={() => {
-            navigation.navigate("CommentsScreen");
+            navigation.navigate("CommentsScreen", { photo, id, uid });
           }}
           style={styles.viewBox}
         >
@@ -73,13 +69,13 @@ export const PostItem = ({
           />
           <Text style={styles.like}>{like}</Text>
         </Pressable>
-        <Pressable onPress={pressMapMarker} style={styles.localBox}>
+        <Pressable onPress={pressMap} style={styles.mapMarkerWrap}>
           <MaterialCommunityIcons
             name="map-marker-outline"
             color="#BDBDBD"
             size={24}
           />
-          <Text style={styles.local}>{imageLocation}</Text>
+          <Text style={styles.local}>{locationText}</Text>
         </Pressable>
       </View>
     </View>
@@ -126,7 +122,7 @@ const styles = StyleSheet.create({
   like: {
     marginLeft: 10,
   },
-  localBox: {
+  mapMarkerWrap: {
     alignItems: "center",
     flexDirection: "row",
     marginLeft: "auto",

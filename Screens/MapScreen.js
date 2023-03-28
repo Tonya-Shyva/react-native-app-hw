@@ -3,9 +3,9 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 export const Map = ({ route }) => {
-  console.log(route.params);
+  // console.log(route.params);
   let latitude = 50.1276217;
-  let longitude = 13.8839722;
+  let longitude = 34.8839722;
   if (route.params.location) {
     latitude = route.params.location.latitude;
     longitude = route.params.location.longitude;
@@ -13,7 +13,7 @@ export const Map = ({ route }) => {
   return (
     <View style={styles.container}>
       <MapView
-        style={mapStyle}
+        style={styles.mapStyle}
         region={{
           latitude: latitude,
           longitude: longitude,
@@ -22,8 +22,8 @@ export const Map = ({ route }) => {
         }}
         mapType="standard"
         minZoomLevel={15}
-        onMapReady={() => console.log("Map is ready")}
-        onRegionChange={() => console.log("Region change")}
+        // onMapReady={() => console.log("Map is ready")}
+        // onRegionChange={() => console.log("Region change")}
       >
         <Marker
           description="Hello"

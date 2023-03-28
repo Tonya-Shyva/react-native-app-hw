@@ -39,8 +39,8 @@ export const Login = ({ navigation }) => {
       return Alert.alert("Заповніть всі обов'язкові поля");
     }
     dispatch(logIn({ email, password }));
-    setEmail("");
-    setPassword("");
+    // setEmail("");
+    // setPassword("");
   };
 
   const emailChange = (value) => setEmail(value);

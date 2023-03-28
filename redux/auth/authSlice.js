@@ -5,6 +5,7 @@ const initialState = {
   name: null,
   email: null,
   token: null,
+  avatar: null,
   isAuth: false,
   id: null,
   error: null,
@@ -19,7 +20,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(register.fulfilled, (state, action) => {
-        console.log(action.payload);
+        // console.log(action.payload);
         state.name = action.payload.name;
         state.email = action.payload.email;
         state.token = action.payload.token;
@@ -35,7 +36,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(logIn.fulfilled, (state, action) => {
-        console.log(action.payload);
+        // console.log(action.payload);
         state.name = action.payload.name;
         state.email = action.payload.email;
         state.token = action.payload.token;
@@ -65,7 +66,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(setAvatar.fulfilled, (state, action) => {
-        console.log(action.payload);
+        // console.log(action.payload);
         state.name = action.payload.name;
         state.email = action.payload.email;
         state.token = action.payload.token;
@@ -81,7 +82,7 @@ const authSlice = createSlice({
 
   reducers: {
     refreshUser: (state, action) => {
-      console.log(action.payload);
+      // console.log(action.payload);
       state.name = action.payload.name;
       state.email = action.payload.email;
       state.token = action.payload.token;
