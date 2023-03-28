@@ -10,18 +10,12 @@ import {
 } from "firebase/auth";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import nanoid from "nanoid";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  uploadBytesResumable,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage, db } from "../../firebase/config";
 
-export const register = createAsyncThunk(
+const register = createAsyncThunk(
   "auth/register",
   async (credentials, { rejectWithValue }) => {
-    // console.log(credentials);
     const auth = getAuth();
     try {
       await createUserWithEmailAndPassword(
@@ -35,12 +29,6 @@ export const register = createAsyncThunk(
         photoURL: credentials.avatar,
       });
       const updateUser = auth.currentUser;
-      console.log(
-        updateUser,
-        updateUser.displayName,
-        updateUser.email,
-        updateUser.uid
-      );
 
       return {
         name: updateUser.displayName,
@@ -55,16 +43,14 @@ export const register = createAsyncThunk(
           "Користувач з таким email вже існує. Перейдіть на сторінку логіну"
         );
       }
-      console.log(error);
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const logIn = createAsyncThunk(
+const logIn = createAsyncThunk(
   "auth/logIn",
   async (credentials, { rejectWithValue }) => {
-    // console.log(credentials);
     const auth = getAuth();
     try {
       const { user } = await signInWithEmailAndPassword(
@@ -77,7 +63,7 @@ export const logIn = createAsyncThunk(
         email: user.email,
         id: user.uid,
         token: user.accessToken,
-        avatar: user.photoURL,
+        avatar: user.avatar,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -85,7 +71,7 @@ export const logIn = createAsyncThunk(
   }
 );
 
-export const logOut = createAsyncThunk(
+const logOut = createAsyncThunk(
   "auth/logOut",
   async (_, { rejectWithValue }) => {
     try {
@@ -97,7 +83,7 @@ export const logOut = createAsyncThunk(
   }
 );
 
-export const setAvatar = createAsyncThunk(
+const setAvatarAuth = createAsyncThunk(
   "auth/setAvatar",
   async (uri, { rejectWithValue }) => {
     const auth = getAuth();
@@ -110,14 +96,14 @@ export const setAvatar = createAsyncThunk(
         email: updateUser.email,
         id: updateUser.uid,
         token: updateUser.accessToken,
-        avatar: updateUser.photoURL,
+        avatar: updateUser.avatar,
       };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
-export const uploadPhotoToStorage = async (uri) => {
+const uploadPhotoToStorage = async (uri) => {
   const response = await fetch(uri);
   const file = await response.blob();
   const imageId = nanoid();
@@ -131,3 +117,5 @@ export const uploadPhotoToStorage = async (uri) => {
   console.log(storageUrlPhoto);
   return storageUrlPhoto;
 };
+
+export { register, logIn, logOut, setAvatarAuth, uploadPhotoToStorage };

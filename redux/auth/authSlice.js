@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { register, logIn, logOut, setAvatar } from "./authOperations";
+import { register, logIn, logOut, setAvatarAuth } from "./authOperations";
 
 const initialState = {
   name: null,
@@ -62,10 +62,10 @@ const authSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      .addCase(setAvatar.pending, (state) => {
+      .addCase(setAvatarAuth.pending, (state) => {
         state.error = null;
       })
-      .addCase(setAvatar.fulfilled, (state, action) => {
+      .addCase(setAvatarAuth.fulfilled, (state, action) => {
         // console.log(action.payload);
         state.name = action.payload.name;
         state.email = action.payload.email;
@@ -75,7 +75,7 @@ const authSlice = createSlice({
         state.error = null;
         state.isAuth = true;
       })
-      .addCase(setAvatar.rejected, (state, action) => {
+      .addCase(setAvatarAuth.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

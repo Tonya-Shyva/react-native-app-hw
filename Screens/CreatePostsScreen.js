@@ -8,25 +8,22 @@ import {
   Pressable,
   TouchableOpacity,
   Platform,
-  SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+
 import { addDoc, collection } from "firebase/firestore";
 import { useIsFocused } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { nanoid } from "nanoid";
-
 import { storage, db } from "../firebase/config";
 import { selectID, selectName } from "../redux/auth/selectors";
-import { uploadPhotoToStorage } from "../redux/auth/authOperations";
 
 export const CreatePostsScreen = ({ navigation }) => {
   const [camera, setCamera] = useState(null);
@@ -37,11 +34,15 @@ export const CreatePostsScreen = ({ navigation }) => {
   const [country, setCountry] = useState(null);
   const [photoSignature, setPhotoSignature] = useState("");
   const [hasPermission, setHasPermission] = useState(null);
-  const [locationText, setLocationText] = useState(null);
+  const [locationText, setLocationText] = useState(
+    "Зачекайте, визначаємо місцевість... "
+  );
+  const [disabled, setDisabled] = useState(true);
 
   const uid = useSelector(selectID);
   const name = useSelector(selectName);
 
+  // let text = "Зачекайте, визначаємо місцевість... ";
   useEffect(() => {
     (async () => {
       let { status } = await Camera.requestCameraPermissionsAsync();
@@ -60,7 +61,12 @@ export const CreatePostsScreen = ({ navigation }) => {
     })();
   }, []);
 
+  if (errorMsg) {
+    return Alert.alert(errorMsg, "Щось пішло не так, залогіньтесь наново");
+  }
+
   useEffect(() => {
+    if (!location) return;
     if (location) {
       (async () => {
         let [address] = await Location.reverseGeocodeAsync({
@@ -71,12 +77,26 @@ export const CreatePostsScreen = ({ navigation }) => {
         if (address) {
           setCity(address.city);
           setCountry(address.country);
-          // setLocation(address);
-          setLocationText(text);
         }
       })();
     }
   }, [location]);
+
+  useEffect(() => {
+    if (!city || !country) {
+      return;
+    } else {
+      setLocationText(`${city}, ${country}`);
+    }
+  }, [city, country]);
+
+  useEffect(() => {
+    if (photo) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [photo]);
 
   const takePhoto = async () => {
     if (camera) {
@@ -92,36 +112,29 @@ export const CreatePostsScreen = ({ navigation }) => {
     }
   };
 
-  const photoSignatureHandler = (text) => {
-    setPhotoSignature(text);
+  const photoSignatureHandler = (value) => {
+    setPhotoSignature(value);
   };
 
-  const photoLocationHandler = (text) => {
-    setLocationText(text);
+  const photoLocationHandler = (value) => {
+    setLocationText(value);
   };
 
-  let text = "Визначаємо місцевість... ";
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (city && country) {
-    text = `${city}, ${country}`;
-  }
+  // const uploadPhotoToStorage = async () => {
+  //   const response = await fetch(photo);
+  //   const blobFile = await response.blob();
 
-  const uploadPhotoToStorage = async () => {
-    const response = await fetch(photo);
-    const blobFile = await response.blob();
+  //   const imageId = nanoid();
+  //   const storageRef = ref(storage, `postImage/${imageId}`);
 
-    const imageId = nanoid();
-    const storageRef = ref(storage, `postImage/${imageId}`);
-
-    await uploadBytes(storageRef, blobFile).then((snapshot) => {
-      console.log("Uploaded a blob or file!");
-    });
-    const storageUrlPhoto = await getDownloadURL(
-      ref(storage, `postImage/${imageId}`)
-    );
-    return storageUrlPhoto;
-  };
+  //   await uploadBytes(storageRef, blobFile).then((snapshot) => {
+  //     console.log("Uploaded a blob or file!");
+  //   });
+  //   const storageUrlPhoto = await getDownloadURL(
+  //     ref(storage, `postImage/${imageId}`)
+  //   );
+  //   return storageUrlPhoto;
+  // };
 
   const downloadPicture = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -135,18 +148,15 @@ export const CreatePostsScreen = ({ navigation }) => {
       const pictureUri = result.assets[0].uri;
       console.log(pictureUri);
       setPhoto(pictureUri);
-      // dispatch(uploadPhotoToStorage(uri));
     }
   };
 
   const uploadPostToStorage = async () => {
-    // const photo = await uploadPhotoToStorage();
     try {
       const dataToSave = {
         name,
         uid,
         photoSignature,
-        // location,
         photo,
         commentCounter: 0,
         locationText,
@@ -160,12 +170,15 @@ export const CreatePostsScreen = ({ navigation }) => {
   };
 
   const sendPost = async () => {
-    await uploadPostToStorage();
-    // console.log("Не пост");
-    setPhotoSignature("");
-    setLocationText("");
-    setPhoto(null);
-    navigation.navigate("Публікації");
+    try {
+      await uploadPostToStorage();
+      setPhotoSignature("");
+      setLocationText(`${city}, ${country}`);
+      setPhoto(null);
+      navigation.navigate("Публікації");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -207,12 +220,7 @@ export const CreatePostsScreen = ({ navigation }) => {
             style={styles.input}
           />
           <View position="relative">
-            <Pressable
-              style={styles.mapBtn}
-              // onPress={() => {
-              //   navigation.navigate("Map", { location });
-              // }}
-            >
+            <Pressable style={styles.mapBtn}>
               <MaterialCommunityIcons
                 name="map-marker-outline"
                 size={24}
@@ -224,11 +232,16 @@ export const CreatePostsScreen = ({ navigation }) => {
               onChangeText={photoLocationHandler}
               placeholder="Місцевість..."
               style={{ ...styles.input, paddingLeft: 30 }}
-            >
-              {/* {text} */}
-            </TextInput>
+            ></TextInput>
           </View>
-          <Pressable onPress={sendPost} style={styles.button}>
+          <Pressable
+            onPress={sendPost}
+            style={{
+              ...styles.button,
+              backgroundColor: disabled ? "#BDBDBD" : "#FF6C00",
+            }}
+            disabled={disabled}
+          >
             <Text style={styles.buttonText}>Опублікувати</Text>
           </Pressable>
           <TouchableOpacity
@@ -298,7 +311,6 @@ const styles = StyleSheet.create({
     left: 2,
   },
   button: {
-    backgroundColor: "#FF6C00",
     borderRadius: 32,
     padding: 16,
     marginVertical: 16,

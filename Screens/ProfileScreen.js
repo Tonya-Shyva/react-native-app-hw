@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import {
   StyleSheet,
@@ -28,40 +28,40 @@ import {
   selectID,
   selectIsAuth,
 } from "../redux/auth/selectors";
-import { logOut, setAvatar } from "../redux/auth/authOperations";
-
-const avaDefault = require("../assets/images/avatar.jpg");
+import { logOut, setAvatarAuth } from "../redux/auth/authOperations";
+import { VirtualizedList } from "react-native";
 
 export const ProfileScreen = ({ navigation }) => {
+  // const dispatch = useDispatch();
   const [posts, setPosts] = useState([]);
-  const [photoAva, setPhotoAva] = useState("");
-  const dispatch = useDispatch();
+  const [avatar, setAvatar] = useState(null);
   const name = useSelector(selectName);
   const id = useSelector(selectID);
-  // const isAuth = useSelector(selectIsAuth);
-  const isAuth = useSelector((state) => state.auth.isAuth);
+  const isAuth = useSelector(selectIsAuth);
 
   useEffect(() => {
     if (!isAuth) return;
-    // if (auth.currentUser.photoURL === "") {
-    //   setPhotoAva(avaDefault);
-    // }
-    setPhotoAva(auth.currentUser.photoURL);
+    const avaFromStorage = getAuth().currentUser.photoURL;
+    setAvatar(avaFromStorage);
+
     const queryRequest = query(collection(db, "posts"), where("uid", "==", id));
     const unsubscribe = onSnapshot(queryRequest, (querySnapshot) => {
-      const post = [];
+      const allPosts = [];
       querySnapshot.forEach((doc) =>
-        post.push({
+        allPosts.push({
           ...doc.data(),
           id: doc.id,
         })
       );
-      setPosts(post);
+      setPosts(allPosts);
     });
+
     return () => {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {}, [avatar]);
 
   const addAvatar = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -71,9 +71,20 @@ export const ProfileScreen = ({ navigation }) => {
       quality: 1,
     });
     const uriAva = result.assets[0].uri;
-    setPhotoAva(uriAva);
-    dispatch(setAvatar(uriAva));
+    setAvatar(uriAva);
+    dispatch(setAvatarAuth(uriAva));
   };
+
+  const getItemCount = () => posts.length;
+
+  const getItem = (posts, index) => ({
+    photo: posts[index].photo,
+    title: posts[index].photoSignature,
+    location: posts[index].location,
+    uid: posts[index].uid,
+    id: posts[index].id,
+    locationText: posts[index].locationText,
+  });
 
   const logOutHandler = () => {
     dispatch(logOut());
@@ -86,16 +97,34 @@ export const ProfileScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <View style={styles.avatarWrapper}>
-          <Image style={styles.avatar} source={{ uri: photoAva }} />
+          <Image style={styles.avatar} source={{ uri: avatar }} />
           <Pressable onPress={addAvatar} style={styles.pressIcon}>
-            <Ionicons name="add-circle-outline" size={30} color="#BDBDBD" />
+            <AntDesign name="pluscircleo" size={30} color="#BDBDBD" />
           </Pressable>
         </View>
         <Pressable onPress={logOutHandler} style={styles.logoutIcon}>
           <MaterialCommunityIcons name="logout" size={26} color="#aaa" />
         </Pressable>
         <Text style={styles.name}>{name}</Text>
-        <SafeAreaView>
+        <VirtualizedList
+          data={posts}
+          initialNumToRender={posts.length}
+          renderItem={({ item }) => (
+            <PostItem
+              navigation={navigation}
+              photo={item.photo}
+              title={item.title}
+              id={item.id}
+              uid={item.uid}
+              location={item.location}
+              locationText={item.locationText}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          getItemCount={getItemCount}
+          getItem={getItem}
+        />
+        {/* <SafeAreaView>
           <FlatList
             data={posts}
             renderItem={({ item }) => (
@@ -112,7 +141,7 @@ export const ProfileScreen = ({ navigation }) => {
             )}
             keyExtractor={(item) => item.id}
           />
-        </SafeAreaView>
+        </SafeAreaView> */}
       </View>
     </ImageBackground>
   );

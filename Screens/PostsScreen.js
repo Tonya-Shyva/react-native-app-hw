@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { StyleSheet, View, Image, Text, VirtualizedList } from "react-native";
 import { useSelector } from "react-redux";
-// import { getAuth } from "firebase/auth";
-import {
-  collection,
-  query,
-  QuerySnapshot,
-  doc,
-  onSnapshot,
-  orderBy,
-} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { collection, query, onSnapshot } from "firebase/firestore";
 
 import { selectName, selectEmail, selectIsAuth } from "../redux/auth/selectors";
 import { auth, db } from "../firebase/config";
@@ -20,17 +13,18 @@ export const PostsScreen = ({ navigation }) => {
   const [avatar, setAvatar] = useState(null);
   const name = useSelector(selectName);
   const email = useSelector(selectEmail);
-  // const isAuth = useSelector(selectIsAuth);
-  const isAuth = useSelector((state) => state.auth.isAuth);
+  const isAuth = useSelector(selectIsAuth);
+  // const isAuth = useSelector((state) => state.auth.isAuth);
 
   useEffect(() => {
     if (!isAuth) return;
-    setAvatar(auth.currentUser.photoURL);
+    const avaFromStorage = getAuth().currentUser.photoURL;
+    // if (!avaFromStorage) {
+    //   setAvatar(avaDefault);
+    // }
+    setAvatar(avaFromStorage);
 
-    const queryRequest = query(
-      collection(db, "posts")
-      // orderBy("date", "desc")
-    );
+    const queryRequest = query(collection(db, "posts"));
     const unsubscribe = onSnapshot(queryRequest, (querySnapshot) => {
       const allPosts = [];
       querySnapshot.forEach((doc) =>

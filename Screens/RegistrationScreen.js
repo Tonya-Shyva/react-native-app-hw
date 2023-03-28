@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -22,12 +22,13 @@ import { AntDesign } from "@expo/vector-icons";
 import {
   register,
   setAvatar,
+  setAvatarAuth,
   uploadPhotoToStorage,
 } from "../redux/auth/authOperations";
-import firebase from "firebase/app";
 import "firebase/storage";
 import "firebase/database";
-
+import { getStorage } from "firebase/storage";
+import { nanoid } from "nanoid";
 const avaDefault = require("../assets/images/avatar.jpg");
 
 export const Registration = ({ navigation }) => {
@@ -49,17 +50,27 @@ export const Registration = ({ navigation }) => {
   };
 
   const addAvatar = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!result) {
+        setAvatar(avaDefault);
+        dispatch(setAvatarAuth(avaDefault));
+      }
 
-    if (!result.canceled) {
-      const uriAva = result.assets[0].uri;
-      setAvatar(uriAva);
-      dispatch(setAvatar(uriAva));
+      if (!result.canceled) {
+        const uriAva = result.assets[0].uri;
+        setAvatar(uriAva);
+        dispatch(setAvatarAuth(uriAva));
+      }
+    } catch (err) {
+      const errCode = err.code;
+      const errMessage = err.message;
+      console.log(errCode, errMessage);
     }
   };
 
@@ -74,16 +85,35 @@ export const Registration = ({ navigation }) => {
     setPassword(value);
   };
 
-  const handleSubmit = () => {
-    keyboardHide();
-    if (login === "" || email === "" || password === "") {
-      return Alert.alert("Заповніть всі обов'язкові поля");
+  // const uploadPhotoToStorage = async () => {
+  //   const storage = getStorage();
+  //   const response = await fetch(avatar);
+  //   const file = await response.blob();
+  //   const imageId = nanoid();
+  //   const storageRef = ref(storage, `avatar/${imageId}`);
+  //   await uploadBytes(storageRef, file).then((snapShot) => {
+  //     console.log("Uploaded a blob or file!");
+  //   });
+  //   const urlAvatar = await getDownloadURL(ref(storage, `avatar/${imageId}`));
+  //   console.log(storageUrlPhoto);
+  //   return urlAvatar;
+  // };
+
+  const handleSubmit = async () => {
+    try {
+      keyboardHide();
+      if (login === "" || email === "" || password === "") {
+        return Alert.alert("Заповніть всі обов'язкові поля");
+      }
+      // const urlAvatar = await uploadPhotoToStorage();
+      dispatch(register({ login, email, password, avatar }));
+      // setLogin("");
+      // setEmail("");
+      // setPassword("");
+      // setAvatar(null);
+    } catch (err) {
+      console.log(err.message);
     }
-    dispatch(register({ email, password, login, avatar }));
-    // setLogin("");
-    // setEmail("");
-    // setPassword("");
-    // setAvatar(null)
   };
 
   const togglePassInput = () => {
@@ -120,17 +150,10 @@ export const Registration = ({ navigation }) => {
             // }}
           >
             <View style={styles.avatarWrapper}>
-              {avatar ? (
-                <Image style={styles.avatar} source={{ uri: avatar }} />
-              ) : null}
-              <TouchableOpacity onPress={addAvatar} activeOpacity={0.5}>
-                <AntDesign
-                  name="pluscircleo"
-                  size={30}
-                  color="#FF6C00"
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
+              <Image style={styles.avatar} source={{ uri: avatar }} />
+              <Pressable onPress={addAvatar} style={styles.iconPlus}>
+                <AntDesign name="pluscircleo" size={30} color="#FF6C00" />
+              </Pressable>
             </View>
 
             <Text style={styles.title}>Реєстрація</Text>
@@ -217,8 +240,8 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
   },
-  icon: {
-    top: 70,
+  iconPlus: {
+    top: -50,
     left: 105,
   },
   title: {
