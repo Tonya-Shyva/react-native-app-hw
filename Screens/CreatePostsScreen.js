@@ -72,6 +72,7 @@ export const CreatePostsScreen = ({ navigation }) => {
           setCity(address.city);
           setCountry(address.country);
           // setLocation(address);
+          setLocationText(text);
         }
       })();
     }
@@ -95,16 +96,15 @@ export const CreatePostsScreen = ({ navigation }) => {
     setPhotoSignature(text);
   };
 
-  // const photoLocationHandler = (text) => {
-  //   setLocationText(text);
-  // };
+  const photoLocationHandler = (text) => {
+    setLocationText(text);
+  };
 
-  let text = "Loading location... ";
+  let text = "Визначаємо місцевість... ";
   if (errorMsg) {
     text = errorMsg;
-  } else if (location) {
+  } else if (city && country) {
     text = `${city}, ${country}`;
-    // setLocationText(text);
   }
 
   const uploadPhotoToStorage = async () => {
@@ -149,7 +149,7 @@ export const CreatePostsScreen = ({ navigation }) => {
         // location,
         photo,
         commentCounter: 0,
-        locationText: text,
+        locationText,
       };
       if (location) dataToSave.location = location.coords;
       const docRef = await addDoc(collection(db, "posts"), dataToSave);
@@ -220,12 +220,12 @@ export const CreatePostsScreen = ({ navigation }) => {
               />
             </Pressable>
             <TextInput
-              // value={locationText}
-              // onChangeText={photoLocationHandler}
+              value={locationText}
+              onChangeText={photoLocationHandler}
               placeholder="Місцевість..."
               style={{ ...styles.input, paddingLeft: 30 }}
             >
-              {text}
+              {/* {text} */}
             </TextInput>
           </View>
           <Pressable onPress={sendPost} style={styles.button}>

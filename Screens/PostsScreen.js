@@ -55,7 +55,7 @@ export const PostsScreen = ({ navigation }) => {
     location: posts[index].location,
     uid: posts[index].uid,
     id: posts[index].id,
-    locationText: posts[index].text,
+    locationText: posts[index].locationText,
   });
 
   return (
@@ -77,10 +77,10 @@ export const PostsScreen = ({ navigation }) => {
                 navigation={navigation}
                 photo={item.photo}
                 title={item.title}
-                locationText={item.locationText}
                 id={item.id}
                 uid={item.uid}
                 location={item.location}
+                locationText={item.locationText}
               />
             )}
             keyExtractor={(item) => item.id}
