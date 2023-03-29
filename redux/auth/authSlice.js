@@ -71,7 +71,7 @@ const authSlice = createSlice({
         state.email = action.payload.email;
         state.token = action.payload.token;
         state.id = action.payload.id;
-        state.avatar = action.payload.avatar;
+        state.avatar = action.payload.photoURL;
         state.error = null;
         state.isAuth = true;
       })
@@ -87,7 +87,7 @@ const authSlice = createSlice({
       state.email = action.payload.email;
       state.token = action.payload.token;
       state.id = action.payload.id;
-      state.avatar = action.payload.avatar;
+      state.avatar = action.payload.photoURL;
       state.error = null;
       state.isAuth = true;
     },

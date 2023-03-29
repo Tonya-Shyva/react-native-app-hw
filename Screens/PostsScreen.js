@@ -4,9 +4,10 @@ import { useSelector } from "react-redux";
 import { getAuth } from "firebase/auth";
 import { collection, query, onSnapshot } from "firebase/firestore";
 
-import { selectName, selectEmail } from "../redux/auth/selectors";
+import { selectName, selectEmail, selectAvatar } from "../redux/auth/selectors";
 import { auth, db } from "../firebase/config";
 import { PostItem } from "../components/PostItem";
+import { uploadPhotoToStorage } from "../redux/auth/authOperations";
 
 const avaDefault = require("../assets/images/avatar.jpg");
 
@@ -18,7 +19,6 @@ export const PostsScreen = ({ navigation }) => {
 
   useEffect(() => {
     const avaFromStorage = getAuth().currentUser.photoURL;
-
     setAvatar(avaFromStorage);
 
     const queryRequest = query(collection(db, "posts"));
@@ -38,6 +38,11 @@ export const PostsScreen = ({ navigation }) => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   const avaUrlStorage = uploadPhotoToStorage(avatar);
+  //   setAvatar(avaUrlStorage);
+  // }, [selectAvatar]);
+
   const getItemCount = () => posts.length;
 
   const getItem = (posts, index) => ({
@@ -52,8 +57,11 @@ export const PostsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.avatarWrapper}>
-        {avatar && <Image style={styles.avatar} source={{ uri: avatar }} />}
-        <Image style={styles.avatar} source={avaDefault} />
+        {avatar ? (
+          <Image style={styles.avatar} source={{ uri: avatar }} />
+        ) : (
+          <Image style={styles.avatar} source={avaDefault} />
+        )}
         <View style={styles.wraper}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.email}>{email}</Text>

@@ -9,6 +9,7 @@ import {
   Text,
   View,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import * as ImagePicker from "expo-image-picker";
@@ -28,7 +29,12 @@ import {
   selectID,
   selectIsAuth,
 } from "../redux/auth/selectors";
-import { logOut, setAvatarAuth } from "../redux/auth/authOperations";
+import {
+  logOut,
+  setAvatarAuth,
+  uploadPhotoToStorage,
+} from "../redux/auth/authOperations";
+import { async } from "@firebase/util";
 
 export const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -38,11 +44,27 @@ export const ProfileScreen = ({ navigation }) => {
   const id = useSelector(selectID);
   const avaDefault = require("../assets/images/avatar.jpg");
 
+  const addAvatar = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      const uriAva = result.assets[0].uri;
+      setAvatar(uriAva);
+      dispatch(setAvatarAuth(uriAva));
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
+    }
+  };
+
   useEffect(() => {
     const avaFromStorage = getAuth().currentUser.photoURL;
-    if (!avaFromStorage) {
-      return;
-    }
+    // if (!avaFromStorage) {
+    //   return;
+    // }
     setAvatar(avaFromStorage);
 
     const queryRequest = query(collection(db, "posts"), where("uid", "==", id));
@@ -62,29 +84,6 @@ export const ProfileScreen = ({ navigation }) => {
     };
   }, []);
 
-  const addAvatar = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    const uriAva = result.assets[0].uri;
-    setAvatar(uriAva);
-    dispatch(setAvatarAuth(uriAva));
-  };
-
-  const getItemCount = () => posts.length;
-
-  const getItem = (posts, index) => ({
-    photo: posts[index].photo,
-    title: posts[index].photoSignature,
-    location: posts[index].location,
-    uid: posts[index].uid,
-    id: posts[index].id,
-    locationText: posts[index].locationText,
-  });
-
   const logOutHandler = () => {
     dispatch(logOut());
   };
@@ -96,8 +95,12 @@ export const ProfileScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <View style={styles.avatarWrapper}>
-          {avatar && <Image style={styles.avatar} source={{ uri: avatar }} />}
-          <Image style={styles.avatar} source={avaDefault} />
+          {avatar ? (
+            <Image style={styles.avatar} source={{ uri: avatar }} />
+          ) : (
+            <Image style={styles.avatar} source={avaDefault} />
+          )}
+
           <Pressable onPress={addAvatar} style={styles.plusIcon}>
             <AntDesign name="pluscircleo" size={30} color="#FF6C00" />
           </Pressable>

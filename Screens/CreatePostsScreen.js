@@ -61,21 +61,25 @@ export const CreatePostsScreen = ({ navigation }) => {
   }, []);
 
   if (errorMsg) {
-    return Alert.alert(errorMsg, "Щось пішло не так, залогіньтесь наново");
+    return Alert.alert(`${errorMsg}`);
   }
 
   useEffect(() => {
     if (!location) return;
     if (location) {
       (async () => {
-        let [address] = await Location.reverseGeocodeAsync({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
+        try {
+          let [address] = await Location.reverseGeocodeAsync({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
 
-        if (address) {
-          setCity(address.city);
-          setCountry(address.country);
+          if (address) {
+            setCity(address.city);
+            setCountry(address.country);
+          }
+        } catch (err) {
+          return Alert.alert(`Упс: ${err.message}`);
         }
       })();
     }
@@ -98,16 +102,24 @@ export const CreatePostsScreen = ({ navigation }) => {
   }, [photo]);
 
   const takePhoto = async () => {
-    if (camera) {
-      const photo = await camera.takePictureAsync();
-      setPhoto(photo.uri);
+    try {
+      if (camera) {
+        const photo = await camera.takePictureAsync();
+        setPhoto(photo.uri);
+      }
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
     }
   };
 
   const deletePhoto = async () => {
-    if (photo) {
-      await FileSystem.deleteAsync(photo, { idempotent: true });
-      setPhoto("");
+    try {
+      if (photo) {
+        await FileSystem.deleteAsync(photo, { idempotent: true });
+        setPhoto("");
+      }
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
     }
   };
 
@@ -120,17 +132,21 @@ export const CreatePostsScreen = ({ navigation }) => {
   };
 
   const downloadPicture = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      const pictureUri = result.assets[0].uri;
-      console.log(pictureUri);
-      setPhoto(pictureUri);
+      if (!result.canceled) {
+        const pictureUri = result.assets[0].uri;
+        console.log(pictureUri);
+        setPhoto(pictureUri);
+      }
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
     }
   };
 
@@ -147,8 +163,8 @@ export const CreatePostsScreen = ({ navigation }) => {
       if (location) dataToSave.location = location.coords;
       const docRef = await addDoc(collection(db, "posts"), dataToSave);
       console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
     }
   };
 
@@ -161,7 +177,7 @@ export const CreatePostsScreen = ({ navigation }) => {
       setCamera(null);
       navigation.navigate("Публікації");
     } catch (err) {
-      console.log(err);
+      return Alert.alert(`Упс: ${err.message}`);
     }
   };
 
