@@ -4,24 +4,21 @@ import { useSelector } from "react-redux";
 import { getAuth } from "firebase/auth";
 import { collection, query, onSnapshot } from "firebase/firestore";
 
-import { selectName, selectEmail, selectIsAuth } from "../redux/auth/selectors";
+import { selectName, selectEmail } from "../redux/auth/selectors";
 import { auth, db } from "../firebase/config";
 import { PostItem } from "../components/PostItem";
+
+const avaDefault = require("../assets/images/avatar.jpg");
 
 export const PostsScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
   const [avatar, setAvatar] = useState(null);
   const name = useSelector(selectName);
   const email = useSelector(selectEmail);
-  const isAuth = useSelector(selectIsAuth);
-  // const isAuth = useSelector((state) => state.auth.isAuth);
 
   useEffect(() => {
-    if (!isAuth) return;
     const avaFromStorage = getAuth().currentUser.photoURL;
-    // if (!avaFromStorage) {
-    //   setAvatar(avaDefault);
-    // }
+
     setAvatar(avaFromStorage);
 
     const queryRequest = query(collection(db, "posts"));
@@ -54,34 +51,33 @@ export const PostsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {isAuth && (
-        <>
-          <View style={styles.avatar}>
-            <Image style={styles.image} source={{ uri: avatar }} />
-            <View style={styles.wraper}>
-              <Text style={styles.name}>{name}</Text>
-              <Text style={styles.email}>{email}</Text>
-            </View>
-          </View>
-          <VirtualizedList
-            data={posts}
-            initialNumToRender={posts.length}
-            renderItem={({ item }) => (
-              <PostItem
-                navigation={navigation}
-                photo={item.photo}
-                title={item.title}
-                id={item.id}
-                uid={item.uid}
-                location={item.location}
-                locationText={item.locationText}
-              />
-            )}
-            keyExtractor={(item) => item.id}
-            getItemCount={getItemCount}
-            getItem={getItem}
-          />
-        </>
+      <View style={styles.avatarWrapper}>
+        {avatar && <Image style={styles.avatar} source={{ uri: avatar }} />}
+        <Image style={styles.avatar} source={avaDefault} />
+        <View style={styles.wraper}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.email}>{email}</Text>
+        </View>
+      </View>
+      {posts && (
+        <VirtualizedList
+          data={posts}
+          initialNumToRender={posts.length}
+          renderItem={({ item }) => (
+            <PostItem
+              navigation={navigation}
+              photo={item.photo}
+              title={item.title}
+              id={item.id}
+              uid={item.uid}
+              location={item.location}
+              locationText={item.locationText}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          getItemCount={getItemCount}
+          getItem={getItem}
+        />
       )}
     </View>
   );
@@ -92,14 +88,14 @@ const styles = StyleSheet.create({
     overflow: "scroll",
   },
 
-  avatar: {
+  avatarWrapper: {
     marginTop: 16,
     padding: 16,
     flexDirection: "row",
     backgroundColor: "#fff",
     overflow: "scroll",
   },
-  image: {
+  avatar: {
     width: 60,
     height: 60,
     borderRadius: 16,

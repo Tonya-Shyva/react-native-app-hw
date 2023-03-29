@@ -42,7 +42,6 @@ export const CreatePostsScreen = ({ navigation }) => {
   const uid = useSelector(selectID);
   const name = useSelector(selectName);
 
-  // let text = "Зачекайте, визначаємо місцевість... ";
   useEffect(() => {
     (async () => {
       let { status } = await Camera.requestCameraPermissionsAsync();
@@ -107,7 +106,7 @@ export const CreatePostsScreen = ({ navigation }) => {
 
   const deletePhoto = async () => {
     if (photo) {
-      await FileSystem.deleteAsync(photo);
+      await FileSystem.deleteAsync(photo, { idempotent: true });
       setPhoto("");
     }
   };
@@ -119,22 +118,6 @@ export const CreatePostsScreen = ({ navigation }) => {
   const photoLocationHandler = (value) => {
     setLocationText(value);
   };
-
-  // const uploadPhotoToStorage = async () => {
-  //   const response = await fetch(photo);
-  //   const blobFile = await response.blob();
-
-  //   const imageId = nanoid();
-  //   const storageRef = ref(storage, `postImage/${imageId}`);
-
-  //   await uploadBytes(storageRef, blobFile).then((snapshot) => {
-  //     console.log("Uploaded a blob or file!");
-  //   });
-  //   const storageUrlPhoto = await getDownloadURL(
-  //     ref(storage, `postImage/${imageId}`)
-  //   );
-  //   return storageUrlPhoto;
-  // };
 
   const downloadPicture = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -175,6 +158,7 @@ export const CreatePostsScreen = ({ navigation }) => {
       setPhotoSignature("");
       setLocationText(`${city}, ${country}`);
       setPhoto(null);
+      setCamera(null);
       navigation.navigate("Публікації");
     } catch (err) {
       console.log(err);
@@ -189,18 +173,18 @@ export const CreatePostsScreen = ({ navigation }) => {
         <View style={styles.container}>
           {useIsFocused() && (
             <Camera style={styles.camera} ref={(ref) => setCamera(ref)}>
-              {photo && (
-                <View style={styles.takePhotoWrap}>
-                  <Image
-                    source={{ uri: photo }}
-                    style={{ width: 300, height: 200 }}
-                  />
-                </View>
-              )}
               <TouchableOpacity style={styles.snapIconWrap} onPress={takePhoto}>
                 <FontAwesome name="camera" size={24} color="#BDBDBD" />
               </TouchableOpacity>
             </Camera>
+          )}
+          {photo && (
+            <View style={styles.takePhotoWrap}>
+              <Image
+                source={{ uri: photo }}
+                style={{ width: 300, height: 210 }}
+              />
+            </View>
           )}
 
           <Pressable onPress={downloadPicture}>
@@ -270,30 +254,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   camera: {
+    position: "relative",
     justifyContent: "center",
     flexDirection: "row",
-    // alignItems: "start",
     height: 240,
     marginTop: 30,
-    borderRadius: 8,
     backgroundColor: "#E5E5E5",
   },
   snapIconWrap: {
+    position: "absolute",
+    bottom: 16,
+    zIndex: 100,
     width: 50,
     height: 50,
     alignItems: "center",
-    alignSelf: "center",
     justifyContent: "center",
     borderRadius: 50,
-    // alignSelf: "center",
     backgroundColor: "#fff",
   },
   takePhotoWrap: {
     position: "absolute",
-    top: 15,
-    left: 10,
-    borderWidth: 3,
-    borderColor: "red",
+    top: 46,
+    left: 30,
+    // borderWidth: 3,
+    // borderColor: "red",
   },
   downloadText: {
     marginTop: 10,

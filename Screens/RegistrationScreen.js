@@ -29,7 +29,7 @@ import "firebase/storage";
 import "firebase/database";
 import { getStorage } from "firebase/storage";
 import { nanoid } from "nanoid";
-const avaDefault = require("../assets/images/avatar.jpg");
+// const avaDefault = require("../assets/images/avatar.jpg");
 
 export const Registration = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -57,10 +57,6 @@ export const Registration = ({ navigation }) => {
         aspect: [4, 3],
         quality: 1,
       });
-      if (!result) {
-        setAvatar(avaDefault);
-        dispatch(setAvatarAuth(avaDefault));
-      }
 
       if (!result.canceled) {
         const uriAva = result.assets[0].uri;

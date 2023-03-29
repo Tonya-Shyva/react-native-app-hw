@@ -21,7 +21,7 @@ import {
   QuerySnapshot,
 } from "firebase/firestore";
 import { storage, db, auth } from "../firebase/config";
-import PostItem from "../components/PostItem";
+import { PostItem } from "../components/PostItem";
 import {
   selectName,
   selectAvatar,
@@ -29,19 +29,20 @@ import {
   selectIsAuth,
 } from "../redux/auth/selectors";
 import { logOut, setAvatarAuth } from "../redux/auth/authOperations";
-import { VirtualizedList } from "react-native";
 
 export const ProfileScreen = ({ navigation }) => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [posts, setPosts] = useState([]);
   const [avatar, setAvatar] = useState(null);
   const name = useSelector(selectName);
   const id = useSelector(selectID);
-  const isAuth = useSelector(selectIsAuth);
+  const avaDefault = require("../assets/images/avatar.jpg");
 
   useEffect(() => {
-    if (!isAuth) return;
     const avaFromStorage = getAuth().currentUser.photoURL;
+    if (!avaFromStorage) {
+      return;
+    }
     setAvatar(avaFromStorage);
 
     const queryRequest = query(collection(db, "posts"), where("uid", "==", id));
@@ -60,8 +61,6 @@ export const ProfileScreen = ({ navigation }) => {
       unsubscribe();
     };
   }, []);
-
-  useEffect(() => {}, [avatar]);
 
   const addAvatar = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -97,38 +96,20 @@ export const ProfileScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <View style={styles.avatarWrapper}>
-          <Image style={styles.avatar} source={{ uri: avatar }} />
-          <Pressable onPress={addAvatar} style={styles.pressIcon}>
-            <AntDesign name="pluscircleo" size={30} color="#BDBDBD" />
+          {avatar && <Image style={styles.avatar} source={{ uri: avatar }} />}
+          <Image style={styles.avatar} source={avaDefault} />
+          <Pressable onPress={addAvatar} style={styles.plusIcon}>
+            <AntDesign name="pluscircleo" size={30} color="#FF6C00" />
           </Pressable>
         </View>
         <Pressable onPress={logOutHandler} style={styles.logoutIcon}>
           <MaterialCommunityIcons name="logout" size={26} color="#aaa" />
         </Pressable>
         <Text style={styles.name}>{name}</Text>
-        <VirtualizedList
-          data={posts}
-          initialNumToRender={posts.length}
-          renderItem={({ item }) => (
-            <PostItem
-              navigation={navigation}
-              photo={item.photo}
-              title={item.title}
-              id={item.id}
-              uid={item.uid}
-              location={item.location}
-              locationText={item.locationText}
-            />
-          )}
-          keyExtractor={(item) => item.id}
-          getItemCount={getItemCount}
-          getItem={getItem}
-        />
-        {/* <SafeAreaView>
+        <SafeAreaView>
           <FlatList
             data={posts}
             renderItem={({ item }) => (
-              // console.log(item)
               <PostItem
                 navigation={navigation}
                 title={item.photoSignature}
@@ -141,7 +122,7 @@ export const ProfileScreen = ({ navigation }) => {
             )}
             keyExtractor={(item) => item.id}
           />
-        </SafeAreaView> */}
+        </SafeAreaView>
       </View>
     </ImageBackground>
   );
@@ -166,12 +147,7 @@ const styles = StyleSheet.create({
     width: 343,
     height: 299,
   },
-  // imageWrap: {
-  //   backgroundColor: "green",
-  //   borderRadius: 17,
-  //   position: "relative",
-  //   height: 0,
-  // },
+
   avatarWrapper: {
     position: "absolute",
     top: -50,
@@ -190,17 +166,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 
-  pressIcon: {
+  plusIcon: {
     position: "absolute",
     top: 70,
-    left: 107,
-    // rotate: 45,
-    collor: "white",
+    left: 106,
   },
-
-  // icon: {
-  //   rotate: "45deg",
-  // },
 
   box: {
     backgroundColor: "grey",
