@@ -18,7 +18,7 @@ export const PostsScreen = ({ navigation }) => {
   const email = useSelector(selectEmail);
 
   useEffect(() => {
-    const avaFromStorage = getAuth().currentUser.photoURL;
+    const avaFromStorage = auth.currentUser.photoURL;
     setAvatar(avaFromStorage);
 
     const queryRequest = query(collection(db, "posts"));
@@ -36,12 +36,7 @@ export const PostsScreen = ({ navigation }) => {
     return () => {
       unsubscribe();
     };
-  }, []);
-
-  // useEffect(() => {
-  //   const avaUrlStorage = uploadPhotoToStorage(avatar);
-  //   setAvatar(avaUrlStorage);
-  // }, [selectAvatar]);
+  }, [avatar]);
 
   const getItemCount = () => posts.length;
 

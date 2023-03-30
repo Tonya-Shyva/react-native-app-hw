@@ -3,7 +3,9 @@ import {
   addDoc,
   collection,
   doc,
+  increment,
   onSnapshot,
+  orderBy,
   query,
   updateDoc,
 } from "firebase/firestore";
@@ -24,6 +26,10 @@ import { useEffect } from "react";
 
 import { db } from "../firebase/config";
 import { Comment } from "../components/Comment";
+import { Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+import { selectName } from "../redux/auth/selectors";
 
 export const CommentsScreen = ({ route }) => {
   const currentUid = getAuth().currentUser.uid;
@@ -31,68 +37,99 @@ export const CommentsScreen = ({ route }) => {
   const avatar = getAuth().currentUser.photoURL;
   const [text, setText] = useState("");
   const [comments, setComments] = useState(null);
+  // const name = useSelector(selectName);
 
   date.locale(uk);
+  const commentDate = date.format(new Date());
 
   const createPost = async () => {
     if (text === "") return;
     try {
       const time = date.format(new Date(), "D MMMM, YYYY | HH:mm");
-      console.log({ avatar, text, time, id });
+
       await addDoc(collection(db, "posts", id, "comments"), {
         avatar,
         text,
         time,
         uid: currentUid,
+        commentDate,
       });
-    } catch (error) {
-      console.log(error.message);
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
     }
     setText("");
   };
 
-  const getAllComments = async () => {
-    const q = query(collection(db, "posts", id, "comments"));
+  // const getAllComments = async () => {
+  //   const q = query(
+  //     collection(db, "posts", id, "comments"),
+  //     orderBy("commentDate")
+  //   );
+  //   const commentRef = doc(db, "posts", id);
+  //   const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  //     const post = [];
+  //     querySnapshot.forEach((doc) =>
+  //       post.push({
+  //         ...doc.data(),
+  //         id: doc.id,
+  //       })
+  //     );
+  //     updateDoc(commentRef, { comment: post.length });
+  //     console.log(post.length);
+  //     setComments(post);
+  //   });
+
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // };
+
+  useEffect(() => {
+    // getAllComments();
+    const q = query(
+      collection(db, "posts", id, "comments"),
+      orderBy("commentDate")
+    );
     const commentRef = doc(db, "posts", id);
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const post = [];
-      querySnapshot.forEach((doc) =>
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const arrComments = [];
+      snapshot.forEach((doc) =>
         post.push({
           ...doc.data(),
           id: doc.id,
         })
       );
-      updateDoc(commentRef, { comment: post.length });
+      updateDoc(commentRef, { commentCounter: arrComments.length });
       // console.log(post.length);
-      setComments(post);
+      setComments(arrComments);
     });
 
     return () => {
       unsubscribe();
     };
-  };
-
-  useEffect(() => {
-    getAllComments();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Image style={styles.image} source={{ uri: photo }} />
-
-      <FlatList
-        data={comments}
-        renderItem={({ item }) => (
-          <Comment
-            avatar={item.avatar}
-            text={item.text}
-            time={item.time}
-            postUid={uid}
-            commentUid={item.uid}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-      />
+      {/* <SafeAreaView> */}
+      {comments && (
+        <FlatList
+          style={styles.comments}
+          data={comments}
+          renderItem={({ item }) => (
+            <Comment
+              avatar={item.avatar}
+              text={item.text}
+              time={item.time}
+              postUid={uid}
+              commentUid={item.uid}
+              // name={name}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+        />
+      )}
 
       <View style={styles.inputWrap}>
         <TextInput
@@ -103,34 +140,34 @@ export const CommentsScreen = ({ route }) => {
         <Pressable onPress={createPost} style={styles.button}>
           <MaterialCommunityIcons
             name="arrow-up-circle"
-            size={36}
+            size={34}
             color="#FF6C00"
           />
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'flex-end',
-    padding: 16,
+    paddingHorisontal: 16,
+    paddingBottom: 16,
   },
-
   image: {
-    // display: 'box',
+    resizeMode: "cover",
     marginLeft: "auto",
     marginRight: "auto",
-    width: "90%",
-    height: "40%",
+    width: "92%",
+    height: 240,
     borderRadius: 15,
   },
-
+  comments: {
+    marginTop: 10,
+  },
   inputWrap: {
     flexDirection: "row",
-    // position: 'relative',
     justifyContent: "center",
     marginTop: 10,
   },

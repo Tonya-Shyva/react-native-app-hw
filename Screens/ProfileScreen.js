@@ -34,7 +34,6 @@ import {
   setAvatarAuth,
   uploadPhotoToStorage,
 } from "../redux/auth/authOperations";
-import { async } from "@firebase/util";
 
 export const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -43,22 +42,6 @@ export const ProfileScreen = ({ navigation }) => {
   const name = useSelector(selectName);
   const id = useSelector(selectID);
   const avaDefault = require("../assets/images/avatar.jpg");
-
-  const addAvatar = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      const uriAva = result.assets[0].uri;
-      setAvatar(uriAva);
-      dispatch(setAvatarAuth(uriAva));
-    } catch (err) {
-      return Alert.alert(`Упс: ${err.message}`);
-    }
-  };
 
   useEffect(() => {
     const avaFromStorage = getAuth().currentUser.photoURL;
@@ -83,6 +66,26 @@ export const ProfileScreen = ({ navigation }) => {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    dispatch(setAvatarAuth(avatar));
+  }, [avatar]);
+
+  const addAvatar = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      const uriAva = result.assets[0].uri;
+      setAvatar(uriAva);
+      dispatch(setAvatarAuth(uriAva));
+    } catch (err) {
+      return Alert.alert(`Упс: ${err.message}`);
+    }
+  };
 
   const logOutHandler = () => {
     dispatch(logOut());
@@ -134,7 +137,7 @@ export const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   image: {
     flex: 1,
-    resizeMode: "cover",
+    resizeMode: "contain",
     justifyContent: "flex-end",
   },
   container: {

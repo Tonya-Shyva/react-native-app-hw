@@ -96,8 +96,7 @@ const setAvatarAuth = createAsyncThunk(
         email: updateUser.email,
         id: updateUser.uid,
         token: updateUser.accessToken,
-        avatar: updateUser.avatar,
-        // avatar: updateUser.photoURL,
+        avatar: updateUser.photoURL,
       };
     } catch (error) {
       return rejectWithValue(error.message);
