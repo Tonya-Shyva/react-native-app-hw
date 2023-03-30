@@ -18,13 +18,12 @@ import {
 // };
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDVVHPYVfJ19hskraQsd91iHRmG37_UrCY",
-  authDomain: "mobile-app-c0481.firebaseapp.com",
-  projectId: "mobile-app-c0481",
-  storageBucket: "mobile-app-c0481.appspot.com",
-  messagingSenderId: "209278367906",
-  appId: "1:209278367906:web:c867ec622fc34c860bbffb",
-  measurementId: "G-LNH4GWM691",
+  apiKey: "AIzaSyD_hODVZ4ZD1PBcd_NFQWwTultUMqydexs",
+  authDomain: "posts-mobile-app.firebaseapp.com",
+  projectId: "posts-mobile-app",
+  storageBucket: "posts-mobile-app.appspot.com",
+  messagingSenderId: "54252706190",
+  appId: "1:54252706190:web:b4bc7b4ac7eeeaba992cdf",
 };
 
 const app = initializeApp(firebaseConfig);

@@ -27,7 +27,7 @@ export const PostItem = ({
   const getLikeAndComment = async () => {
     const postRef = doc(db, "posts", id);
     const docSnap = await getDoc(postRef);
-    setComment(await docSnap.data().comment);
+    setComment(await docSnap.data().commentCounter);
     setLike(await docSnap.data().like);
   };
 

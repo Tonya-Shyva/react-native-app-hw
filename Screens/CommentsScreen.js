@@ -40,7 +40,7 @@ export const CommentsScreen = ({ route }) => {
   // const name = useSelector(selectName);
 
   date.locale(uk);
-  const commentDate = date.format(new Date());
+  const commentDate = new Date();
 
   const createPost = async () => {
     if (text === "") return;
@@ -60,30 +60,6 @@ export const CommentsScreen = ({ route }) => {
     setText("");
   };
 
-  // const getAllComments = async () => {
-  //   const q = query(
-  //     collection(db, "posts", id, "comments"),
-  //     orderBy("commentDate")
-  //   );
-  //   const commentRef = doc(db, "posts", id);
-  //   const unsubscribe = onSnapshot(q, (querySnapshot) => {
-  //     const post = [];
-  //     querySnapshot.forEach((doc) =>
-  //       post.push({
-  //         ...doc.data(),
-  //         id: doc.id,
-  //       })
-  //     );
-  //     updateDoc(commentRef, { comment: post.length });
-  //     console.log(post.length);
-  //     setComments(post);
-  //   });
-
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // };
-
   useEffect(() => {
     // getAllComments();
     const q = query(
@@ -94,20 +70,21 @@ export const CommentsScreen = ({ route }) => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const arrComments = [];
       snapshot.forEach((doc) =>
-        post.push({
+        arrComments.push({
           ...doc.data(),
           id: doc.id,
         })
       );
-      updateDoc(commentRef, { commentCounter: arrComments.length });
-      // console.log(post.length);
+      updateDoc(commentRef, {
+        commentCounter: arrComments.length > 0 ? arrComments.length : null,
+      });
       setComments(arrComments);
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [comments]);
 
   return (
     <SafeAreaView style={styles.container}>

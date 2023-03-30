@@ -157,7 +157,6 @@ export const CreatePostsScreen = ({ navigation }) => {
         uid,
         photoSignature,
         photo,
-        commentCounter: 0,
         locationText,
       };
       if (location) dataToSave.location = location.coords;
