@@ -19,7 +19,9 @@ export const PostsScreen = ({ navigation }) => {
 
   useEffect(() => {
     const avaFromStorage = auth.currentUser.photoURL;
-    setAvatar(avaFromStorage);
+    if (avaFromStorage) {
+      setAvatar(avaFromStorage);
+    }
 
     const queryRequest = query(collection(db, "posts"));
     const unsubscribe = onSnapshot(queryRequest, (querySnapshot) => {
